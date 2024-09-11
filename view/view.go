@@ -44,8 +44,11 @@ func isAlphanumericSpecial(s string) bool {
 func Authorization(ctx context.Context) (string, string) {
 	// base64 decode -> split username and password by ':' -> return username and password
 	auth := ctx.Value("Authorization").(string)
+	println(auth)
 	decoded, err := base64.StdEncoding.DecodeString(auth)
 	if err != nil {
+		println("error:", err)
+		println("auth:", auth)
 		return "", ""
 	}
 	credentials := string(decoded)
@@ -101,8 +104,7 @@ func (v *ServerView) GetUserQuery(ctx context.Context, user_id string) (domain.G
 	if passauth == "" || passauth != domain.DatabasePassword[user_id] {
 		return domain.GetUserQueryResponse{}, domain.Err{
 			StatusCode: 401,
-			Message: "Unauthorized",
-			Cause: "Authernication Failed",
+			Message: "Authentication Failed",
 		}
 	}
 	// 404 can not find user_id
@@ -129,7 +131,7 @@ func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nicknam
 	if passauth != domain.DatabasePassword[user_id] {
 		return domain.PatchUserResponse{}, domain.Err{
 			StatusCode: 401,
-			Message: "Authernication Failed",
+			Message: "Authentication Failed",
 		}
 	}
 	// 403 no permission to update
@@ -152,11 +154,11 @@ func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nicknam
 
 func (v *ServerView) Close(ctx context.Context) (domain.CloseResponse, error) {
 	userauth, passauth := Authorization(ctx)
-	// 401 Authernication failed: username and password are not matched
+	// 401 Authentication failed: username and password are not matched
 	if passauth == "" || passauth != domain.DatabasePassword[userauth] {
 		return domain.CloseResponse{}, domain.Err{
 			StatusCode: 401,
-			Message: "Authernication Failed",
+			Message: "Authentication Failed",
 		}
 	}
 	return v.core.Close(ctx, userauth)

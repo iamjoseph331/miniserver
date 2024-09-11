@@ -73,7 +73,7 @@ func (v *ServerView) SigninQuery(ctx context.Context, user_id string, password s
 		return domain.SigninQueryResponse{}, domain.Err{
 			StatusCode: 400,
 			Message: "Account creation failed",
-			Cause: "user_id must be 6 ~ 20 characters, password must be 8 ~ 20 characters",
+			Cause: "user_id 6 ~ 20 characters, password 8 ~ 20 characters required",
 		}
 	}
 	// user_id must be consist of only alphabets and numbers, password must be consist of only alphabets, numbers, and special characters
@@ -97,19 +97,19 @@ func (v *ServerView) SigninQuery(ctx context.Context, user_id string, password s
 
 func (v *ServerView) GetUserQuery(ctx context.Context, user_id string) (domain.GetUserQueryResponse, error) {
 	userauth, passauth := Authorization(ctx)
+	// 401 unauthorized
+	if passauth != domain.DatabasePassword[user_id] {
+		return domain.GetUserQueryResponse{}, domain.Err{
+			StatusCode: 401,
+			Message: "Unauthorized",
+			Cause: "Authernication failed",
+		}
+	}
 	// 404 can not find user_id
 	if _, ok := domain.Database[user_id]; !ok {
 		return domain.GetUserQueryResponse{}, domain.Err{
 			StatusCode: 404,
 			Message: "No user found",
-		}
-	}
-	// 401 unauthorized
-	if userauth != user_id || passauth != domain.DatabasePassword[user_id] {
-		return domain.GetUserQueryResponse{}, domain.Err{
-			StatusCode: 401,
-			Message: "Unauthorized",
-			Cause: "Authernication failed",
 		}
 	}
 	return v.core.GetUserQuery(ctx, user_id)
@@ -117,19 +117,19 @@ func (v *ServerView) GetUserQuery(ctx context.Context, user_id string) (domain.G
 
 func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nickname string, comment string) (domain.PatchUserResponse, error) {
 	userauth, passauth := Authorization(ctx)
-	// 404 can not find user_id
-	if _, ok := domain.Database[user_id]; !ok {
-		return domain.PatchUserResponse{}, domain.Err{
-			StatusCode: 404,
-			Message: "No user found",
-		}
-	}
 	// 400 require nickname or comment
 	if nickname == "" && comment == "" {
 		return domain.PatchUserResponse{}, domain.Err{
 			StatusCode: 400,
 			Message: "User updation failed",
 			Cause: "require nickname or comment",
+		}
+	}
+	// 401 unauthorized
+	if passauth != domain.DatabasePassword[user_id] {
+		return domain.PatchUserResponse{}, domain.Err{
+			StatusCode: 401,
+			Message: "Authernication failed",
 		}
 	}
 	// 403 no permission to update
@@ -139,12 +139,11 @@ func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nicknam
 			Message: "no permission to update",
 		}
 	}
-
-	// 401 unauthorized
-	if passauth != domain.DatabasePassword[user_id] {
+	// 404 can not find user_id
+	if _, ok := domain.Database[user_id]; !ok {
 		return domain.PatchUserResponse{}, domain.Err{
-			StatusCode: 401,
-			Message: "Authernication failed",
+			StatusCode: 404,
+			Message: "No user found",
 		}
 	}
 

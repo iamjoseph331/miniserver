@@ -78,4 +78,10 @@ func Setup() {
 	if err := viper.Unmarshal(&Conf); err != nil {
 		log.Fatal(errors.Wrap(err, "failed to unmarshal config file"))
 	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Fallback port for local testing
+	}
+	// make httpserver port able to use environment variable
+	Conf.HTTPServer.Port = port
 }

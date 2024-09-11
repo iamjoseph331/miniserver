@@ -98,11 +98,11 @@ func (v *ServerView) SigninQuery(ctx context.Context, user_id string, password s
 func (v *ServerView) GetUserQuery(ctx context.Context, user_id string) (domain.GetUserQueryResponse, error) {
 	_, passauth := Authorization(ctx)
 	// 401 unauthorized
-	if passauth != domain.DatabasePassword[user_id] {
+	if passauth == "" || passauth != domain.DatabasePassword[user_id] {
 		return domain.GetUserQueryResponse{}, domain.Err{
 			StatusCode: 401,
 			Message: "Unauthorized",
-			Cause: "Authernication failed",
+			Cause: "Authernication Failed",
 		}
 	}
 	// 404 can not find user_id
@@ -129,14 +129,14 @@ func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nicknam
 	if passauth != domain.DatabasePassword[user_id] {
 		return domain.PatchUserResponse{}, domain.Err{
 			StatusCode: 401,
-			Message: "Authernication failed",
+			Message: "Authernication Failed",
 		}
 	}
 	// 403 no permission to update
 	if userauth != user_id {
 		return domain.PatchUserResponse{}, domain.Err{
 			StatusCode: 403,
-			Message: "no permission to update",
+			Message: "No Permission for Update",
 		}
 	}
 	// 404 can not find user_id
@@ -153,10 +153,10 @@ func (v *ServerView) PatchUserQuery(ctx context.Context, user_id string, nicknam
 func (v *ServerView) Close(ctx context.Context) (domain.CloseResponse, error) {
 	userauth, passauth := Authorization(ctx)
 	// 401 Authernication failed: username and password are not matched
-	if passauth != domain.DatabasePassword[userauth] {
+	if passauth == "" || passauth != domain.DatabasePassword[userauth] {
 		return domain.CloseResponse{}, domain.Err{
 			StatusCode: 401,
-			Message: "Authernication failed",
+			Message: "Authernication Failed",
 		}
 	}
 	return v.core.Close(ctx, userauth)

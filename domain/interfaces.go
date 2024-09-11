@@ -12,20 +12,20 @@ type SigninQueryObject struct {
 }
 
 type PatchUserObject struct {
-	Nickname string `json:"nickname", omitempty`
-	Comment string `json:"comment", omitempty`
+	Nickname string `json:"nickname, omitempty"`
+	Comment string `json:"comment, omitempty"`
 }
 
 type UserPublic struct {
-	UserId string `json:"user_id", omitempty`
-	Nickname string `json:"nickname", omitempty`
-	Comment string `json:"comment", omitempty`
+	UserId string `json:"user_id, omitempty"`
+	Nickname string `json:"nickname, omitempty"`
+	Comment string `json:"comment, omitempty"`
 }
 
 type UserPrivate struct {
 	UserId string `json:"user_id"`
-	Nickname string `json:"nickname"`
-	Password string `json:"password"`
+	Nickname string `json:"nickname, omitempty"`
+	Password string `json:"password, omitempty"`
 }
 
 type SigninQueryResponse struct {

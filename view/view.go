@@ -96,7 +96,7 @@ func (v *ServerView) SigninQuery(ctx context.Context, user_id string, password s
 }
 
 func (v *ServerView) GetUserQuery(ctx context.Context, user_id string) (domain.GetUserQueryResponse, error) {
-	userauth, passauth := Authorization(ctx)
+	_, passauth := Authorization(ctx)
 	// 401 unauthorized
 	if passauth != domain.DatabasePassword[user_id] {
 		return domain.GetUserQueryResponse{}, domain.Err{

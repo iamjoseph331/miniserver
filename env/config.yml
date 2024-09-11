@@ -1,0 +1,4 @@
+httpServer:
+  port: 10001
+logger:
+  level: "DEBUG"

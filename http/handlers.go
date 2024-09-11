@@ -12,51 +12,34 @@ import (
 )
 
 const (
-	requestID  = "X-Kong-Request-ID"
-	instanceID = "instance-id"
+	auth  = "Authorization"
 )
 
 type Receptor interface {
-	Heard(ctx context.Context, req *domain.ReceptorObject) (string, error)
-	Thought(ctx context.Context, req *domain.ReceptorObject) (string, error)
-	HeardVoice(ctx context.Context, req *domain.ReceptorObject) (string, error)
-	Lookat(ctx context.Context, req *domain.ReceptorObject) (string, error)
+	Signup(ctx context.Context, req *domain.ReceptorObject) (domain.SigninQueryResponse, error)
+	GetUser(ctx context.Context, req *domain.ReceptorObject) (string, error)
+	PatchUser(ctx context.Context, req *domain.ReceptorObject) (string, error)
+	Close(ctx context.Context, req *domain.ReceptorObject) (string, error)
 }
 
 type ServerViewService interface {
-	SigninQuery(ctx context.Context, query string) (string, error)
+	SigninQuery(ctx context.Context, user_id string, password string) (domain.SigninQueryResponse, error)
+	GetUserQuery(ctx context.Context, user_id string) (domain.GetUserQueryResponse, error)
+	PatchUserQuery(ctx context.Context, user_id string, nickname string, comment string) (domain.PatchUserResponse, error)
+	Close(ctx context.Context) (domain.CloseResponse, error)
 }
 
 var view ServerViewService
 
-func Lookat(ctx *gin.Context) {
-	/*
-		request := &CreateClassRequest{
-			Class: domain.FaceDefault512ClassName,
-		}
-		if err := ctx.ShouldBind(&request); err != nil {
-			log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
-			handleShouldBindError(ctx, err)
-			return
-		}
-		className, err := view.CreateClass512D(
-			context.WithValue(ctx, requestID, ctx.Request.Header.Get(requestID)),
-			&domain.CreateClassRequest{
-				Class:      request.Class,
-				InstanceID: request.InstanceId,
-			},
-		)
-		if err != nil {
-			handleErrors(ctx, err)
-			return
-		}
-		resp := &CreateClassResponse{Class: className}
-		ctx.JSON(http.StatusCreated, resp)*/
+type ReturnError struct {
+	Message string `json:"message"`
+	Cause string `json:"cause, omitempty"`
 }
 
-func Heard(ctx *gin.Context) {
+func Signup(ctx *gin.Context) {
 	request := &domain.SigninQueryObject{
-		UserID: "000",
+		UserId: "000",
+		Password: "000",
 	}
 	if err := ctx.ShouldBind(&request); err != nil {
 		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
@@ -64,13 +47,41 @@ func Heard(ctx *gin.Context) {
 		return
 	}
 	response, err := view.SigninQuery(
-		context.WithValue(ctx, requestID, ctx.Request.Header.Get(requestID)),
-		request.Query,
+		context.WithValue(ctx, auth, ctx.Request.Header.Get("Authorization")),
+		request.UserId,
+		request.Password,
 	)
 	if err != nil {
 		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+		status_code := err.(domain.Err).StatusCode
+		returnerror := ReturnError{
+			Message: err.(domain.Err).Message,
+			Cause: err.(domain.Err).Cause,
+		}
+		ctx.JSON(status_code, gin.H{
+			"response": returnerror,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"response": response,
+	})
+}
+// /users/{user_id}
+func GetUser(ctx *gin.Context, user_id string) {
+	response, err := view.GetUserQuery(
+		context.WithValue(ctx, auth, ctx.Request.Header.Get("Authorization")),
+		user_id,
+	)
+	if err != nil {
+		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
+		status_code := err.(domain.Err).StatusCode
+		returnerror := ReturnError{
+			Message: err.(domain.Err).Message,
+			Cause: err.(domain.Err).Cause,
+		}
+		ctx.JSON(status_code, gin.H{
+			"response": returnerror,
 		})
 		return
 	}
@@ -79,12 +90,59 @@ func Heard(ctx *gin.Context) {
 	})
 }
 
-func Thought(ctx *gin.Context) {
-
+//"/users/{user_id}"
+func PatchUser(ctx *gin.Context, user_id string) {
+	request := &domain.PatchUserObject{
+		Nickname: "",
+		Comment: "",
+	}
+	if err := ctx.ShouldBind(&request); err != nil {
+		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
+		handleShouldBindError(ctx, err)
+		return
+	}
+	response, err := view.PatchUserQuery(
+		context.WithValue(ctx, auth, ctx.Request.Header.Get("Authorization")),
+		user_id,
+		request.Nickname,
+		request.Comment,
+	)
+	if err != nil {
+		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
+		status_code := err.(domain.Err).StatusCode
+		returnerror := ReturnError{
+			Message: err.(domain.Err).Message,
+			Cause: err.(domain.Err).Cause,
+		}
+		ctx.JSON(status_code, gin.H{
+			"response": returnerror,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"response": response,
+	})
 }
 
-func HeardVoice(ctx *gin.Context) {
-
+func Close(ctx *gin.Context) {
+	response, err := view.Close(
+		context.WithValue(ctx, auth, ctx.Request.Header.Get("Authorization")),
+	)	
+	if err != nil {
+		log.Logger.Error(log.ApplicationLog(ctx, "%v", err.Error()))
+		status_code := err.(domain.Err).StatusCode
+		returnerror := ReturnError{
+			Message: err.(domain.Err).Message,
+			Cause: err.(domain.Err).Cause,
+		}
+		ctx.JSON(status_code, gin.H{
+			"response": returnerror,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"response": response,
+	})
 }
 
 func Healthy(ctx *gin.Context) {}

@@ -11,9 +11,9 @@ import (
 	
 	"github.com/iamjoseph331/miniserver/config"
 	"github.com/iamjoseph331/miniserver/log"
-	"github.com/iamjoseph331/miniserver/server/core"
-	"github.com/iamjoseph331/miniserver/server/http"
-	"github.com/iamjoseph331/miniserver/server/view"
+	"github.com/iamjoseph331/miniserver/core"
+	serverhttp "github.com/iamjoseph331/miniserver/http"
+	"github.com/iamjoseph331/miniserver/view"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -43,9 +43,9 @@ func initialize() {
 	log.Setup()
 
 	// Initialize the core service
-	coreService := core.serverCore()
+	coreService := core.NewServerCore()
 	// Initialize the view
-	view := view.serverCore(coreService)
+	view := view.NewServerView(coreService)
 
 	// Create new HTTP server
 	httpServer = &http.Server{
@@ -53,7 +53,6 @@ func initialize() {
 		Handler:           serverhttp.NewHTTPServer(view),
 		ReadHeaderTimeout: 20 * time.Second, // Set a limit on the time it takes to receive headers
 	}
-
 }
 
 func httpServerStart() error {

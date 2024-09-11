@@ -44,11 +44,10 @@ func isAlphanumericSpecial(s string) bool {
 func Authorization(ctx context.Context) (string, string) {
 	// base64 decode -> split username and password by ':' -> return username and password
 	auth := ctx.Value("Authorization").(string)
-	println(auth)
+	// remove "Basic " from auth
+	auth = strings.TrimPrefix(auth, "Basic ")
 	decoded, err := base64.StdEncoding.DecodeString(auth)
 	if err != nil {
-		println("error:", err)
-		println("auth:", auth)
 		return "", ""
 	}
 	credentials := string(decoded)

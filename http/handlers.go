@@ -58,14 +58,10 @@ func Signup(ctx *gin.Context) {
 			Message: err.(domain.Err).Message,
 			Cause: err.(domain.Err).Cause,
 		}
-		ctx.JSON(status_code, gin.H{
-			"response": returnerror,
-		})
+		ctx.JSON(status_code, returnerror)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"response": response,
-	})
+	ctx.JSON(http.StatusOK, response)
 }
 // /users/{user_id}
 func GetUser(ctx *gin.Context, user_id string) {
@@ -80,14 +76,10 @@ func GetUser(ctx *gin.Context, user_id string) {
 			Message: err.(domain.Err).Message,
 			Cause: err.(domain.Err).Cause,
 		}
-		ctx.JSON(status_code, gin.H{
-			"response": returnerror,
-		})
+		ctx.JSON(status_code, returnerror)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"response": response,
-	})
+	ctx.JSON(http.StatusOK, response)
 }
 
 //"/users/{user_id}"
@@ -114,14 +106,10 @@ func PatchUser(ctx *gin.Context, user_id string) {
 			Message: err.(domain.Err).Message,
 			Cause: err.(domain.Err).Cause,
 		}
-		ctx.JSON(status_code, gin.H{
-			"response": returnerror,
-		})
+		ctx.JSON(status_code, returnerror)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"response": response,
-	})
+	ctx.JSON(http.StatusOK, response)
 }
 
 func Close(ctx *gin.Context) {
@@ -135,14 +123,10 @@ func Close(ctx *gin.Context) {
 			Message: err.(domain.Err).Message,
 			Cause: err.(domain.Err).Cause,
 		}
-		ctx.JSON(status_code, gin.H{
-			"response": returnerror,
-		})
+		ctx.JSON(status_code, returnerror)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"response": response,
-	})
+	ctx.JSON(http.StatusOK, response)
 }
 
 func Healthy(ctx *gin.Context) {}
